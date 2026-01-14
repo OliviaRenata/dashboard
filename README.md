@@ -1,10 +1,37 @@
-<div align="center">
-https://img.shields.io/badge/PHP-8.0+-777BB4?style=for-the-badge&logo=php&logoColor=white
-https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white
-https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white
-https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white
-https://img.shields.io/badge/Responsive-100%2525-4CAF50?style=for-the-badge
+ Módulo: Dashboard de Gestão de Vendas
+O Dashboard é a central de inteligência do sistema, projetado para fornecer uma visão em tempo real da saúde financeira e operacional da empresa. Ele consolida dados de vendas, performance de equipe e alertas de inventário em uma interface responsiva e intuitiva.
 
-Sistema completo para gestão de vendas, estoque e equipe comercial
+ Principais Funcionalidades
+Indicadores de Desempenho (KPIs): Monitoramento diário de Volume de Vendas, Faturamento Bruto, Custos Operacionais e Lucro Líquido.
 
-</div>
+Ranking de Vendedores: Identificação automática do "Vendedor Estrela", destacando quem possui maior volume e lucratividade no período.
+
+Alertas de Inventário: Sistema de notificações críticas para produtos:
+
+Sem estoque.
+
+Sem preço de venda definido.
+
+Sem custo cadastrado.
+
+Sem código de barras (EAN).
+
+Análise Visual (Gráficos): * Gráfico de evolução de vendas dos últimos 10 dias.
+
+Gráfico comparativo de performance entre vendedores.
+
+ Tecnologias Utilizadas
+Backend: PHP (Gestão de sessões e integração com MySQL).
+
+Frontend: HTML5, CSS3 (Custom Properties e Animações), Bootstrap.
+
+Gráficos: Chart.js para visualização de dados dinâmica.
+
+Interatividade: JavaScript Assíncrono (Fetch API) para atualização de dados sem recarregamento de página.
+
+ Diferenciais do Design
+Totalmente Responsivo: Interface adaptável para desktops, tablets e smartphones.
+
+UX Dinâmico: Uso de animações Fade-in e estados de hover nos cards para melhor experiência do usuário.
+
+Segurança: Controle de permissões integrado e sanitização de chaves de acesso via SHA1.
