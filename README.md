@@ -1,5 +1,4 @@
-Dashboard de Vendedores – README
-Descrição
+Dashboard de Vendedores
 
 Este projeto é um Dashboard de Vendedores desenvolvido em PHP + MySQL, com foco em exibir métricas de vendas, evolução e comissões de cada vendedor da empresa. Ele permite acompanhar quantidade de vendas, valor total e comissões em tempo real, oferecendo insights sobre desempenho individual e coletivo da equipe de vendas.
 
