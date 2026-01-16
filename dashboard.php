@@ -1,5 +1,4 @@
 <?php session_start();
-// print_r($_SESSION); 
 if (isset($_SESSION['logado'])) {
     require "core/mysql.php";
     require "bin/funcoes.bin.php";
@@ -7,6 +6,18 @@ if (isset($_SESSION['logado'])) {
     $pageid = "dashboard";
     $pagenum = "1";
     require "core/controleDePermissoes.php"; 
+
+    // Criar instância da classe correta
+    $localsql = new Localsql(); // ajuste para o nome real da sua classe
+
+    // Buscar dados do vendedor estrela
+    $vendedorEstrela = $localsql->getVendedorEstrela($idempresa, $pdom);
+    
+    // Buscar totais do dia
+    $totaisDia = $localsql->getTotaisVendasDia($idempresa, $pdom);
+    
+    // Buscar indicadores dos vendedores
+    $indicadoresVendedores = $localsql->getIndicadoresVendedores($idempresa, $pdom);
 ?>
     <!DOCTYPE html>
     <html lang="pt-br">
@@ -114,7 +125,7 @@ if (isset($_SESSION['logado'])) {
             transition: all var(--transition-speed) ease;
             position: relative;
             z-index: 1;
-            height: var(--card-height);
+    
             display: flex;
             align-items: center;
             padding: 1rem 1.25rem;
@@ -485,107 +496,135 @@ if (isset($_SESSION['logado'])) {
             position: relative;
             z-index: 2;
         }
+        
+        /* Estilos para o dashboard de vendedores */
+        .dashboard-vendedores {
+            margin-top: 2rem;
+        }
+        
+        .table-vendedores {
+            font-size: 0.9rem;
+        }
+        
+        .table-vendedores th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            border-top: none;
+        }
+        
+        .badge-perfomance {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .card-vendedor {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .card-vendedor:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        .card-vendedor .card-header {
+            background: linear-gradient(135deg, #0099ff 0%, #0078cc 100%);;
+            color: white;
+            border-bottom: none;
+            font-weight: 600;
+            padding: 1rem 1.25rem;
+        }
+        
+ 
+        .ranking-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        /* Novos estilos para gráficos lado a lado */
+        .graficos-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 2rem;
+        }
+        
+        .grafico-card {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .grafico-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+        
+        .grafico-header {
+            background: linear-gradient(135deg, #0099ff 0%, #0078cc 100%);
+            color: white;
+            padding: 14px 18px;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        
+        .grafico-header i {
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+        
+        .grafico-body {
+            padding: 20px;
+            height: 300px;
+            position: relative;
+        }
+        
+        @media (max-width: 992px) {
+            .graficos-container {
+                flex-direction: column;
+            }
+            
+            .grafico-card {
+                min-width: 100%;
+            }
+        }
+        
+        /* Estilos para gráficos específicos */
+        .grafico-largo {
+            flex: 2;
+            min-width: 500px;
+        }
+        
+        .grafico-alto {
+            height: 400px;
+        }
+        
+        .grafico-body-alto .grafico-body {
+            height: 350px;
+        }
     </style>
-  <style>
-    :root {
-      --cor-primaria: #0099ff;
-      --cor-fundo: #f5f7fa;
-      --cor-card: #ffffff;
-      --sombra: rgba(0, 0, 0, 0.08);
-      --texto-titulo: #222;
-      --texto-normal: #555;
-    }
-
-    /* body {
-      font-family: "Segoe UI", Roboto, Arial, sans-serif;
-      background: var(--cor-fundo);
-      margin: 0;
-      padding: 40px 20px;
-      color: var(--texto-normal);
-    } */
-
-    h2 {
-      text-align: center;
-      color: var(--texto-titulo);
-      font-size: 1.8rem;
-      margin-bottom: 35px;
-      letter-spacing: 0.5px;
-    }
 
 
-  .card {
-    width: 90%;
-    max-width: 1000px; /* era 1000px, agora mais largo */
-    margin: 20px auto;
-    border-radius: 12px;
-    background: var(--cor-card);
-    box-shadow: 0 4px 20px var(--sombra);
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 24px var(--sombra);
-    }
-
-    .card-header {
-      background: var(--cor-primaria);
-      color: #fff;
-      padding: 14px 18px;
-      font-weight: 600;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-    }
-
-    .card-header i {
-      margin-right: 8px;
-      font-size: 1.2rem;
-    }
-
-  .card-body {
-    padding: 25px;
-    height: 500px; /* 🔹 aumenta altura padrão dos gráficos */
-  }
-
-  canvas {
-    width: 100% !important;
-    height: 100% !important;
-    max-height: 600px;
-  }
-
-  /* 🔹 Ajuste para telas grandes: os gráficos ainda maiores */
-  @media (min-width: 100px) {
-    .card {
-      max-width: 1200px;
-    }
-    .card-body {
-      height: 550px;
-    }
-  }
-
-  /* 🔹 Ajuste para mobile */
-  @media (max-width: 768px) {
-    .card {
-      width: 100%;
-      max-width: 100%;
-      margin: 10px 0;
-    }
-
-    .card-body {
-      padding: 15px;
-      height: 350px;
-    }
-
-      h2 {
-        font-size: 1.4rem;
-      }
-    }
-  </style>
-    <body>
+<body>
         <div class="container-fluid position-relative bg-white d-flex p-0">
             <!-- Spinner Start -->
             <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
@@ -602,524 +641,739 @@ if (isset($_SESSION['logado'])) {
             <!-- Topbar End -->
 
             <!-- content Start -->
-            <div id="content" class="container-fluid pt-4 px-4 ">
+<div id="content" class="container-fluid pt-4 px-4">
 
-                                                    <!-- Company Header -->
-                                                    <div class="company-header">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <div>
-                                                                <h3><?= $idempresa ?> - <?= $apelido ?></h3>
-                                                                <!-- Usuário menor e na mesma cor -->
-                                                                <div class="user-info-company">
-                                                                    <i class="fas fa-user me-2"></i> <?php echo $_SESSION['idlogin']; ?>.<?php echo $_SESSION['nome']; ?>
-                                                                </div>
-                                                            </div>
-                                                            <i class="fas fa-building company-icon"></i>
-                                                        </div>
-                                                    </div>
+    <!-- Company Header -->
+    <div class="company-header">
+        <div class="d-flex justify-content-between align-items-center">
 
-                                                    <!-- Stats Cards -->
-                                                    <div class="stats-container mb-3">
-                                                        <div class="row <?= $mobile == "true" ? "g-2" : "g-3" ?>">
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div class="card-stat border ">
-                                                                    <i class="fa-solid fa-cart-shopping stat-icon text-primary"></i>
-                                                                    <div class="stat-content">
-                                                                        <p class="stat-label">Vendas/Dia</p>
-                                                                        <h6 id="numVendas" class="stat-value">...</h6>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div class="card-stat border">
-                                                                    <i class="fa fa-solid fa-dollar-sign stat-icon text-primary"></i>
-                                                                    <div class="stat-content">
-                                                                        <p class="stat-label">Valor Bruto</p>
-                                                                        <h6 id="brutoDia" class="stat-value">...</h6>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div class="card-stat border">
-                                                                    <i class="fa fa-chart-area stat-icon text-primary"></i>
-                                                                    <div class="stat-content">
-                                                                        <p class="stat-label mb-1">Custo</p>
-                                                                        <h3 id="custoDia" class="stat-value mb-0">...</h3>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div class="card-stat border">
-                                                                    <i class="fa-solid fa-arrow-trend-up stat-icon text-primary"></i>
-                                                                    <div class="stat-content">
-                                                                        <p class="stat-label mb-1">Lucro</p>
-                                                                        <h3 id="lucroDia" class="stat-value mb-0">...</h3>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+            <!-- Lado esquerdo -->
+            <div>
+                <h3><?= $idempresa ?> - <?= $apelido ?></h3>
 
-                                                    <?php
-                                                    $safeKey5 = htmlspecialchars(sha1($_SERVER['REMOTE_ADDR'] . "5"), ENT_QUOTES, 'UTF-8');
-                                                    $safeKey6 = htmlspecialchars(sha1($_SERVER['REMOTE_ADDR'] . "6"), ENT_QUOTES, 'UTF-8');
-                                                    $safeKey8 = htmlspecialchars(sha1($_SERVER['REMOTE_ADDR'] . "8"), ENT_QUOTES, 'UTF-8');
-                                                    $safeKey9 = htmlspecialchars(sha1($_SERVER['REMOTE_ADDR'] . "9"), ENT_QUOTES, 'UTF-8');
-                                                    $safeKey10 = htmlspecialchars(sha1($_SERVER['REMOTE_ADDR'] . "10"), ENT_QUOTES, 'UTF-8');
-                                                    $safeKey11 = htmlspecialchars(sha1($_SERVER['REMOTE_ADDR'] . "11"), ENT_QUOTES, 'UTF-8');
-                                                    ?>
+                <div class="user-info-company">
+                    <i class="fas fa-user me-2"></i>
+                    <?= $_SESSION['idlogin']; ?>.<?= $_SESSION['nome']; ?>
+                </div>
+            </div>
 
-                                                    <!-- Alerts vendedor estrela -->
-                                                    <div class="container-fluid pt-4 px-0 dashboard-section" style="animation-delay: 0.2s">
-                                                        <div class="row <?= $mobile == "true" ? "g-2" : "g-3" ?>">
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div class="card-stat border">
-                                                                    <i class="fa-solid fa-star stat-icon text-warning"></i>
-                                                                    <div class="stat-content ">
-                                                                        <p class="stat-label text-long-break">Vendedor Estrela</p>
-                                                                        <h6 id="nomevendedor" class="stat-value">...</h6>
-                                                                    </div>
-                              
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div class="card-stat border">
-                                                                    <i class="fa-solid fa-receipt stat-icon text-warning"></i>
-                                                                    <div class="stat-content ">
-                                                                        <p class="stat-label text-long-break">Qtd Vendas</p>
-                                                                        <h6 id="qtdvendasvendedor" class="stat-value">...</h6>
-                                                                    </div>
-                                                             
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div class="card-stat border">
-                                                                    <i class="fa-solid fa-circle-dollar-to-slot stat-icon text-warning"></i>
-                                                                    <div class="stat-content ">
-                                                                        <p class="stat-label text-long-break">Vlr Total De Vendas</p>
-                                                                        <h6 id="vendastotalvendedor" class="stat-value">...</h6>
-                                                                    </div>
-                                                                   
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div class="card-stat border">
-                                                                    <i class="fa-solid fa-sack-dollar stat-icon text-warning"></i>
-                                                                    <div class="stat-content ">
-                                                                        <p class="stat-label text-long-break">Lucro Total Vendedor</p>
-                                                                        <h6 id="lucrovendasvendedor" class="stat-value">...</h6>
-                                                                    </div>
-                                                                 
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- Inventory Alerts Section -->
-                                                    <div class="container-fluid pt-4 px-0 dashboard-section" style="animation-delay: 0.4s">
-                                                        <div class="row <?= $mobile == "true" ? "g-2" : "g-3" ?>">
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div class="card-stat border">
-                                                                    <i class="fa-solid fa-triangle-exclamation stat-icon text-danger"></i>
-                                                                    <div class="stat-content ">
-                                                                        <p class="stat-label text-long-break">Produtos S/ Estoque</p>
-                                                                        <h6 id="prodSemEst" class="stat-value">...</h6>
-                                                                    </div>
-                                                                
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div class="card-stat border">
-                                                                    <i class="fa fa-solid fa-dollar-sign stat-icon text-danger"></i>
-                                                                    <div class="stat-content">
-                                                                        <p class="stat-label text-long-break">Produtos S/ Custo</p>
-                                                                        <h6 id="prodSemCusto" class="stat-value">...</h6>
-                                                                    </div>
-                                                                   
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div class="card-stat border">
-                                                                    <i class="bi bi-tag-fill stat-icon text-danger"></i>
-                                                                    <div class="stat-content ">
-                                                                        <p class="stat-label text-long-break">Produtos S/ Preço</p>
-                                                                        <h6 id="prodSemPreco" class="stat-value">...</h6>
-                                                                    </div>
-                                                                                                                                    
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-sm-6 col-xl-3">
-                                                                <div class="card-stat border">
-                                                                    <i class="fa-solid fa-barcode stat-icon text-danger"></i>
-                                                                    <div class="stat-content">
-                                                                        <p class="stat-label text-long-break">Produtos S/ EAN</p>
-                                                                        <h6 id="prodSemCodBarras" class="stat-value">...</h6>
-                                                                    </div>
-                                                                   
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+            <!-- Lado direito -->
+            <div class="d-flex align-items-center gap-3">
 
-                                            <!-- coloque este bloco onde deseja que o gráfico apareça (ex: dentro do container do dashboard) -->
-                                            <div class="card shadow-sm mt-4">
-                                            <div class="card-header bg-primary text-white">
-                                                <i class="bi bi-graph-up"></i> Evolução Vendas por Vendedor (Últimos 10 dias)
-                                            </div>
-                                            <div class="card-body" style="height:420px">
-                                                <canvas id="graficoVendedores" style="width:100%; height:100%"></canvas>
-                                            </div>
-                                            </div>
+                <!-- Vendedor Estrela -->
+                <div class="card-stat border card-vendedor-estrela">
+                    <i class="fa-solid fa-star stat-icon text-warning"></i>
+                    <div class="stat-content text-end">
+                        <p class="stat-label mb-1">Vendedor Estrela</p>
+                        <h6 id="nomevendedor" class="stat-value mb-0">
+                            <?= htmlspecialchars($vendedorEstrela['nome_vendedor'] ?? 'Nenhum') ?>
+                        </h6>
+                    </div>
+                </div>
 
-                                            <head>
-                                                <meta charset="UTF-8">
-                                                <title>Evolução de Vendas - Últimos 10 Dias</title>
-                                                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <!-- Ícone da empresa -->
+                <i class="fas fa-building company-icon"></i>
+
+            </div>
+ </div>
+ 
+
+</div>
 
 
-                                                <h2></h2>
+                <?php
+                $safeKey5 = htmlspecialchars(sha1($_SERVER['REMOTE_ADDR'] . "5"), ENT_QUOTES, 'UTF-8');
+                $safeKey6 = htmlspecialchars(sha1($_SERVER['REMOTE_ADDR'] . "6"), ENT_QUOTES, 'UTF-8');
+                $safeKey8 = htmlspecialchars(sha1($_SERVER['REMOTE_ADDR'] . "8"), ENT_QUOTES, 'UTF-8');
+                $safeKey9 = htmlspecialchars(sha1($_SERVER['REMOTE_ADDR'] . "9"), ENT_QUOTES, 'UTF-8');
+                $safeKey10 = htmlspecialchars(sha1($_SERVER['REMOTE_ADDR'] . "10"), ENT_QUOTES, 'UTF-8');
+                $safeKey11 = htmlspecialchars(sha1($_SERVER['REMOTE_ADDR'] . "11"), ENT_QUOTES, 'UTF-8');
+                ?>
 
-                                                <div class="card">
-                                                    <div class="card-header">
-                                                    <i class="bi bi-graph-up"></i> Evolução De Vendas (Últimos 10 dias)
-                                                    </div>
-                                                    <div class="card-body">
-                                                    <canvas id="graficoVendas10Dias"></canvas>
-                                                    </div>
-                                                </div>
-                                                
+
+                
+                <!-- Gráficos lado a lado -->
+                <div class="graficos-container">
+                    <!-- Gráfico 1: Evolução Vendas por Vendedor -->
+                    <div class="grafico-card grafico-largo border">
+                        <div class="grafico-header">
+                            <i class="bi bi-graph-up"></i> Evolução Vendas por Vendedor (Últimos 10 dias)
+                        </div>
+                        <div class="grafico-body">
+                            <canvas id="graficoVendedores"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Gráfico 2: Evolução Geral de Vendas -->
+                    <div class="grafico-card border">
+                        <div class="grafico-header">
+                            <i class="bi bi-graph-up"></i> Evolução Geral (Últimos 10 dias)
+                        </div>
+                        <div class="grafico-body">
+                            <canvas id="graficoVendas10Dias"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dashboard de Vendedores -->
+<div class="dashboard-vendedores mt-4  border">
+
+    <!-- Top 5 Vendedores - Mais Vendas -->
+   <div class="row mb-4 justify-content-center">
+        <div class="col-10">
+            <div class="card shadow-sm card-vendedor">
+                <div class="card-header">
+                    <i class="fas fa-trophy me-2"></i>
+                    Top 5 Vendedores - Mais Vendas (Últimos 30 dias)
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-vendedores mb-0">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Vendedor</th>
+                                    <th class="text-end">Vendas</th>
+                                    <th class="text-end">Valor Total</th>
+                                    <th class="text-end">Comissão</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaTopLucro">
+                                <tr>
+                                    <td colspan="5" class="text-center">Carregando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 5 Vendedores - Mais Desconto -->
+    <div class="row mb-4 justify-content-center">
+        <div class="col-10">
+            <div class="card shadow-sm card-vendedor">
+                <div class="card-header">
+                    <i class="fas fa-percent me-2"></i>
+                    Top 5 Vendedores - Mais Desconto
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-vendedores mb-0">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Vendedor</th>
+                                    <th class="text-end">Qtd Vendas</th>
+                                    <th class="text-end">Total Desconto</th>
+                                    <th class="text-end">% Médio</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaTopDesconto">
+                                <tr>
+                                    <td colspan="5" class="text-center">Carregando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+ 
+                 </div>
+                </div>
+ 
+   
+                 </div>
+                </div>
+                    
+                    <!-- Metas e Performance -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card shadow-sm">
+                                <div class="card-header bg-info text-white">
+                                    <i class="fas fa-bullseye me-2"></i>
+                                    Metas e Performance dos Vendedores (Este Mês)
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="tabelaMetas">
+                                            <thead>
+                                                <tr>
+                                                    <th>Vendedor</th>
+                                                    <th class="text-center">Vendas (Mês)</th>
+                                                    <th class="text-center">Valor Total</th>
+                                                    <th class="text-center">Ticket Médio</th>
+                                                    <th class="text-center">Comissão Total</th>
+                                                    <th class="text-center">Performance</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <!-- Dados serão preenchidos via JavaScript -->
+                                                <tr><td colspan="6" class="text-center">Carregando...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Alerts Section -->
 
 
         <?php require "home/home.back.to.top.php" ?>
         <?php require "core/importacoes_js.php"; ?>
         <?php require "footer.php"; ?>
-
-        <script>
-            // Sales Dashboard Data
-            async function updateVendasDia() {
-                try {
-                    const response = await fetch('core/dashboard.php');
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    const data = await response.json();
-
-                    document.getElementById('brutoDia').textContent = data.vlr_total;
-                    document.getElementById('numVendas').textContent = data.num_vendas;
-                    document.getElementById('custoDia').textContent = data.custo_total;
-                    document.getElementById('lucroDia').textContent = data.lucro_total;
-                } catch (error) {
-                    console.error('Error fetching sales data:', error);
-                }
-            }
-
-            // Alerts vendedor Estrela
-        
-            async function updateAlertasvendedor() {
-    try {
-       const response = await fetch('core/dashboardAlertasVendEstrela.php');
-        if (!response.ok) throw new Error('Network response was not ok');
-        
-        const data = await response.json();
-        document.getElementById('nomevendedor').textContent = data.nomevendedor ;
-        document.getElementById('qtdvendasvendedor').textContent = formatarNumero(data.qtdvendasvendedor);
-        document.getElementById('vendastotalvendedor').textContent = formatarBRL(data.vendastotalvendedor);
-        document.getElementById('lucrovendasvendedor').textContent = formatarBRL(data.lucrovendasvendedor);
-        
-    } catch (error) {
-        console.error('Error fetching Vendedor Estrela data:', error);
-     
-    }
-}
-
-            // Inventory Data
-            async function updateDadosEstoque() {
-                try {
-                    const response = await fetch('bin/dashboardEstoque.php');
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    const data = await response.json();
-
-                    document.getElementById('prodSemEst').textContent = data.produtosSemSALDO;
-                    document.getElementById('prodSemCusto').textContent = data.produtosSemCUSTO;
-                    document.getElementById('prodSemPreco').textContent = data.produtosSemPRECO;
-                    document.getElementById('prodSemCodBarras').textContent = data.produtosSemCODBAR;
-                } catch (error) {
-                    console.error('Error fetching inventory data:', error);
-                }
-            }
-
-            // Initialize all data fetchers
-            document.addEventListener('DOMContentLoaded', () => {
-                // Initial load
-                updateVendasDia();
-                updateAlertasvendedor();
-                updateDadosEstoque();
-
-                // Set intervals for updates
-                setInterval(updateVendasDia, 10000); // Update sales every 10 seconds
-                setInterval(updateAlertasvendedor, 60000); // Update alerts every minute
-                setInterval(updateDadosEstoque, 60000); // Update inventory every minute
-
-                // Add animation to cards when they come into view
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add('animate__animated', 'animate__fadeInUp');
-                        }
-                    });
-                }, {
-                    threshold: 0.1
-                });
-
-                document.querySelectorAll('.card-stat').forEach(card => {
-                    observer.observe(card);
-                });
-            });
-        </script>
-
-
-<!-- coloque este bloco onde deseja que o gráfico apareça (ex: dentro do container do dashboard) -->
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-        function formatarDataBrasileira(dataISO) {
-  if (!dataISO) return "";
-  const partes = dataISO.split("-");
-  if (partes.length !== 3) return dataISO;
-  const [ano, mes, dia] = partes;
-  return `${dia}/${mes}/${ano}`;
-}
+    // ===================================================
+    // FUNÇÕES DE FORMATAÇÃO
+    // ===================================================
+    function formatarNumero(num) {
+        return new Intl.NumberFormat('pt-BR').format(num || 0);
+    }
 
+    function formatarBRL(valor) {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(valor || 0);
+    }
+
+    function formatarPercentual(valor) {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'percent',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format((valor || 0) / 100);
+    }
+
+    // ===================================================
+    // FUNÇÕES PARA BUSCAR DADOS
+    // ===================================================
     
-document.addEventListener('DOMContentLoaded', () => {
-  carregarGraficoVendedores();
-});
+    // Vendas do dia (APENAS COMISSÃO E DESCONTO)
+    async function updateVendasDia() {
+        try {
+            const response = await fetch('core/dashboardVendedores.php?acao=totais_dia');
+            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+            const data = await response.json();
 
-function getUltimosNDiasLabels(n = 10) {
-  const arr = [];
-  const today = new Date();
-  // cria array com N dias (ordenado asc: mais antigo -> mais recente)
-  for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    arr.push(`${yyyy}-${mm}-${dd}`);
-  }
-  return arr;
-}
-
-async function carregarGraficoVendedores() {
-  try {
-    const resp = await fetch('core/dashboard.php?acao=vendedores10dias');
-    if (!resp.ok) throw new Error('Erro ao buscar dados: ' + resp.status);
-    const data = await resp.json();
-
-    console.log('Dados recebidos (vendedores10dias):', data); // debug: verifique formato no console
-
-    if (!Array.isArray(data) || data.length === 0) {
-      console.warn('Sem dados para os últimos 10 dias.');
-      // opcional: limpar canvas ou mostrar mensagem
-      return;
-    }
-
-    // labels fixas: últimos 10 dias (YYYY-MM-DD)
-    const labels = getUltimosNDiasLabels(10);
-
-    // Agrupa dados por vendedor
-    // estrutura: { 'Nome Vendedor': { '2025-10-25': 123.45, ... }, ... }
-    const vendedoresMap = {};
-    data.forEach(row => {
-      const nome = (row.nome_vendedor || row.NOME || 'Sem Vendedor').trim();
-      const dataDia = row.data; // espera "YYYY-MM-DD"
-      const valor = parseFloat(row.vlr_vendido ?? row.VLR_VENDIDO ?? 0) || 0;
-      if (!vendedoresMap[nome]) vendedoresMap[nome] = {};
-      vendedoresMap[nome][dataDia] = (vendedoresMap[nome][dataDia] || 0) + valor;
-    });
-
-    // monta datasets (um por vendedor), preenchendo zeros para datas faltantes
-    const vendedores = Object.keys(vendedoresMap);
-    const datasets = vendedores.map((nome, idx) => {
-      const valores = labels.map(d => vendedoresMap[nome][d] || 0);
-      // gerar cor HSL variável por índice
-      const hue = (idx * 47) % 360; // passo para diversificar cores
-      const border = `hsl(${hue}, 65%, 40%)`;
-      const background = `hsla(${hue}, 65%, 40%, 0.12)`;
-      return {
-        label: nome,
-        data: valores,
-        borderColor: border,
-        backgroundColor: background,
-        fill: false,
-        tension: 0.25,
-        pointRadius: 3,
-        pointHoverRadius: 6
-      };
-    });
-
-    // destroi gráfico anterior se houver
-    const canvas = document.getElementById('graficoVendedores');
-    if (!canvas) {
-      console.error('Canvas #graficoVendedores não encontrado no DOM.');
-      return;
-    }
-
-    // guarda o gráfico na propriedade do elemento para permitir destruição
-    if (canvas._chartInstance) {
-      canvas._chartInstance.destroy();
-    }
-
-    const ctx = canvas.getContext('2d');
-    canvas._chartInstance = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels,
-        datasets
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } },
-          tooltip: {
-            callbacks: {
-              label: ctxItem => {
-                const v = ctxItem.parsed.y;
-                // formatar como BRL
-                return ctxItem.dataset.label + ': R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-              }
+            if (data) {
+                // Atualiza apenas os elementos que existem no HTML
+                if (document.getElementById('comissaoDia')) {
+                    document.getElementById('comissaoDia').textContent = formatarBRL(data.vlr_comissao);
+                }
+                if (document.getElementById('descontoDia')) {
+                    document.getElementById('descontoDia').textContent = formatarBRL(data.vlr_desconto);
+                }
             }
-          },
-          title: { display: true, text: 'Vendas por Vendedor (últimos 10 dias)' }
-        },
-        scales: {
-          y: {
-            title: { display: true, text: 'Valor (R$)' },
-            beginAtZero: true,
-            ticks: {
-              callback: function(value) {
-                return Number(value).toLocaleString('pt-BR', {minimumFractionDigits: 0});
-              }
-            }
-          },
-          x: {
-            title: { display: true, text: 'Data' }
-          }
+        } catch (error) {
+            console.error('Erro ao buscar vendas do dia:', error);
         }
-      }
-    });
+    }
 
-  } catch (err) {
-    console.error('Erro ao carregar gráfico de vendedores:', err);
-  }
-}
-</script>
+    // Vendedor estrela (APENAS NOME E COMISSÃO)
+    async function updateAlertasvendedor() {
+        try {
+            const response = await fetch('core/dashboardVendedores.php?acao=vendedor_estrela');
+            if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+            const data = await response.json();
 
-  <script>
-        function formatarDataBrasileira(dataISO) {
-  if (!dataISO) return "";
-  const partes = dataISO.split("-");
-  if (partes.length !== 3) return dataISO;
-  const [ano, mes, dia] = partes;
-  return `${dia}/${mes}/${ano}`;
-}
-    async function carregarGrafico() {
-      try {
-        const response = await fetch('core/dashboard.php?acao=10dias');
-        if (!response.ok) throw new Error('Erro na resposta da rede.');
-
-        const data = await response.json();
-
-        const labels = data.map(item => formatarDataBrasileira(item.data));
-        const vlrTotalData = data.map(item => parseFloat(item.vlr_total));
-        const custoData = data.map(item => parseFloat(item.custo_total));
-        const numVendasData = data.map(item => parseInt(item.num_vendas));
-
-        const ctx = document.getElementById('graficoVendas10Dias').getContext('2d');
-
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                label: 'Valor Total (R$)',
-                data: vlrTotalData,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                tension: 0.3,
-                fill: true
-              },
-              {
-                label: 'Custo Total (R$)',
-                data: custoData,
-                borderColor: 'rgba(255, 99, 132, 1)',
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                tension: 0.3,
-                fill: true
-              },
-              {
-                label: 'Nº de Vendas',
-                data: numVendasData,
-                borderColor: 'rgba(54, 162, 235, 1)',
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                tension: 0.3,
-                fill: true,
-                yAxisID: 'y2'
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            interaction: {
-              mode: 'index',
-              intersect: false
-            },
-            stacked: false,
-            plugins: {
-              legend: {
-                position: 'top',
-              },
-              title: {
-                display: true,
-                text: 'Evolução de Vendas, Custos e Quantidade (10 dias)'
-              }
-            },
-            scales: {
-              y: {
-                type: 'linear',
-                display: true,
-                position: 'left',
-                title: {
-                  display: true,
-                  text: 'Valores (R$)'
+            if (data) {
+                // Atualiza apenas os elementos que existem no HTML
+                if (document.getElementById('nomevendedor')) {
+                    document.getElementById('nomevendedor').textContent = data.nome_vendedor || 'Nenhum';
                 }
-              },
-              y2: {
-                type: 'linear',
-                display: true,
-                position: 'right',
-                grid: {
-                  drawOnChartArea: false
-                },
-                title: {
-                  display: true,
-                  text: 'Número de Vendas'
+                if (document.getElementById('lucrovendasvendedor')) {
+                    document.getElementById('lucrovendasvendedor').textContent = formatarBRL(data.valor_comissao || 0);
                 }
-              }
             }
-          }
+        } catch (error) {
+            console.error('Erro ao buscar vendedor estrela:', error);
+        }
+    }
+
+    // Top vendedores
+    async function carregarTopVendedores() {
+        try {
+            const [responseLucro, responseDesconto, responseMetas] = await Promise.all([
+                fetch('core/dashboardVendedores.php?acao=mais_lucro&limit=5'),
+                fetch('core/dashboardVendedores.php?acao=mais_desconto&limit=5'),
+                fetch('core/dashboardVendedores.php?acao=metas')
+            ]);
+
+            if (responseLucro.ok) {
+                const dataLucro = await responseLucro.json();
+                atualizarTopLucro(dataLucro);
+            }
+
+            if (responseDesconto.ok) {
+                const dataDesconto = await responseDesconto.json();
+                atualizarTopDesconto(dataDesconto);
+            }
+
+            if (responseMetas.ok) {
+                const dataMetas = await responseMetas.json();
+                atualizarMetas(dataMetas);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar top vendedores:', error);
+        }
+    }
+
+    // REMOVIDA: Função updateDadosEstoque - elementos não existem mais
+
+function atualizarTopLucro(vendedores) {
+    const tbody = document.getElementById('tabelaTopLucro');
+    if (!tbody) return;
+
+    if (!Array.isArray(vendedores) || vendedores.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center text-muted">
+                    Nenhuma venda registrada
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+tbody.innerHTML = '';
+
+vendedores.forEach((vendedor, index) => {
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+        <td class="text-center">
+            <span class="ranking-number">${index + 1}</span>
+        </td>
+
+        <td class="vendedor-col">
+            <span class="vendedor-nome" title="${vendedor.nome_vendedor || ''}">
+                <strong>${vendedor.nome_vendedor || 'Sem nome'}</strong>
+            </span>
+        </td>
+            <td class="text-end fw-bold">
+                ${formatarNumero(vendedor.qtd_vendas || 0)}
+            </td>
+            <td class="text-end text-success fw-bold">
+                ${formatarBRL(vendedor.valor_total || 0)}
+            </td>
+            <td class="text-end text-primary">
+                ${formatarBRL(vendedor.valor_comissao || 0)}
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+    function atualizarTopDesconto(vendedores) {
+        const tbody = document.getElementById('tabelaTopDesconto');
+        if (!tbody) return;
+
+        if (!vendedores || vendedores.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhuma venda registrada</td></tr>';
+            return;
+        }
+
+tbody.innerHTML = '';
+
+vendedores.forEach((vendedor, index) => {
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+        <td class="text-center">
+            <span class="ranking-number">${index + 1}</span>
+        </td>
+
+        <td class="vendedor-col">
+            <span class="vendedor-nome" title="${vendedor.nome_vendedor || ''}">
+                ${vendedor.nome_vendedor || 'Sem nome'}
+            </span>
+        </td>
+                <td class="text-end">${formatarNumero(vendedor.qtd_vendas || 0)}</td>
+                <td class="text-end text-danger fw-bold">${formatarBRL(vendedor.total_desconto || 0)}</td>
+                <td class="text-end">${formatarPercentual(vendedor.media_percentual || 0)}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function atualizarMetas(metas) {
+        const tbody = document.querySelector('#tabelaMetas tbody');
+        if (!tbody) return;
+
+        if (!metas || metas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhuma venda registrada</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '';
+        const maxValor = Math.max(...metas.map(m => m.valor_total_mes || 0));
+
+        metas.forEach(meta => {
+            const porcentagem = maxValor > 0 ? (meta.valor_total_mes / maxValor) * 100 : 0;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+<td>
+    <strong class="vendedor-nome">
+        ${meta.nome_vendedor || 'Sem vendedor'}
+    </strong>
+</td>
+
+                <td class="text-center">${formatarNumero(meta.qtd_vendas_mes || 0)}</td>
+                <td class="text-center fw-bold">${formatarBRL(meta.valor_total_mes || 0)}</td>
+                <td class="text-center">${formatarBRL(meta.ticket_medio || 0)}</td>
+                <td class="text-center text-primary">${formatarBRL(meta.total_comissao || 0)}</td>
+                <td>
+                    <div class="progress progress-vendedor">
+                        <div class="progress-bar bg-success" 
+                             role="progressbar" 
+                             style="width: ${porcentagem}%"
+                             aria-valuenow="${porcentagem}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="text-muted">${porcentagem.toFixed(1)}% do líder</small>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // ===================================================
+    // FUNÇÕES PARA GRÁFICOS
+    // ===================================================
+    function mostrarMensagemGraficoVazio(canvasId, mensagem) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Destruir gráfico anterior se existir
+        if (canvas._chartInstance) {
+            canvas._chartInstance.destroy();
+            canvas._chartInstance = null;
+        }
+
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#666';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(mensagem, canvas.width / 2, canvas.height / 2);
+    }
+
+    async function carregarGraficoVendedores() {
+        const canvas = document.getElementById('graficoVendedores');
+        if (!canvas) {
+            console.error('Canvas #graficoVendedores não encontrado');
+            return;
+        }
+
+        try {
+            const resp = await fetch('core/dashboardVendedores.php?acao=evolucao_vendedores');
+            if (!resp.ok) throw new Error(`Erro HTTP: ${resp.status} - ${resp.statusText}`);
+            
+            const data = await resp.json();
+
+            // Verifica se há dados
+            if (!data || Object.keys(data).length === 0) {
+                mostrarMensagemGraficoVazio('graficoVendedores', 'Nenhuma venda registrada nos últimos 10 dias');
+                return;
+            }
+
+            // Labels dos últimos 10 dias
+            const labels = [];
+            const today = new Date();
+            for (let i = 9; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(today.getDate() - i);
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                labels.push(`${yyyy}-${mm}-${dd}`);
+            }
+
+            // Preparar datasets
+            const datasets = Object.values(data).map((vendedor, idx) => {
+                const valores = labels.map(d => vendedor.vendas[d] || 0);
+                const hue = (idx * 47) % 360; // cores distintas por vendedor
+
+                return {
+                    label: vendedor.nome || 'Sem nome',
+                    data: valores,
+                    borderColor: `hsl(${hue}, 65%, 40%)`,
+                    backgroundColor: `hsla(${hue}, 65%, 40%, 0.12)`,
+                    fill: false,
+                    tension: 0.25,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    borderWidth: 2
+                };
+            });
+
+            // Destruir gráfico anterior se existir
+            if (canvas._chartInstance) {
+                canvas._chartInstance.destroy();
+            }
+
+            const ctx = canvas.getContext('2d');
+            canvas._chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.map(d => {
+                        const [ano, mes, dia] = d.split('-');
+                        return `${dia}/${mes}`;
+                    }),
+                    datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { 
+                        mode: 'index', 
+                        intersect: false 
+                    },
+                    plugins: {
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { 
+                                boxWidth: 12, 
+                                padding: 10,
+                                font: { size: 11 } 
+                            } 
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctxItem) => {
+                                    const valor = ctxItem.parsed.y;
+                                    return `${ctxItem.dataset.label}: R$ ${valor.toLocaleString('pt-BR', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    })}`;
+                                }
+                            }
+                        },
+                        title: { 
+                            display: true, 
+                            text: 'Vendas por Vendedor (últimos 10 dias)',
+                            font: { size: 14 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: { display: true, text: 'Valor (R$)' },
+                            beginAtZero: true,
+                            ticks: { callback: function(value) { return formatarBRL(value); } },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Data' },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        }
+                    }
+                }
+            });
+
+        } catch (err) {
+            console.error('Erro ao carregar gráfico de vendedores:', err);
+            mostrarMensagemGraficoVazio('graficoVendedores', 'Erro ao carregar dados');
+        }
+    }
+
+    async function carregarGraficoGeral() {
+        const canvas = document.getElementById('graficoVendas10Dias');
+        if (!canvas) {
+            console.error('Canvas #graficoVendas10Dias não encontrado');
+            return;
+        }
+
+        try {
+            const resp = await fetch('core/dashboardVendedores.php?acao=grafico_10_dias');
+            if (!resp.ok) throw new Error(`Erro HTTP: ${resp.status} - ${resp.statusText}`);
+            
+            const data = await resp.json();
+            
+            if (!Array.isArray(data)) {
+                throw new Error('Resposta inválida da API');
+            }
+
+            if (data.length === 0) {
+                mostrarMensagemGraficoVazio('graficoVendas10Dias', 'Nenhuma venda registrada nos últimos 10 dias');
+                return;
+            }
+
+            // Ordenar por data crescente para o gráfico
+            data.sort((a, b) => new Date(a.data) - new Date(b.data));
+            
+            const labels = data.map(item => {
+                const [ano, mes, dia] = item.data.split('-');
+                return `${dia}/${mes}`;
+            });
+            
+            const vlrTotalData = data.map(item => parseFloat(item.vlr_total) || 0);
+            const descontoData = data.map(item => parseFloat(item.vlr_desconto) || 0);
+            const numVendasData = data.map(item => parseInt(item.num_vendas) || 0);
+
+            // Destruir gráfico anterior se existir
+            if (canvas._chartInstance) {
+                canvas._chartInstance.destroy();
+            }
+
+            const ctx = canvas.getContext('2d');
+            canvas._chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Valor Total (R$)',
+                            data: vlrTotalData,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Desconto Total (R$)',
+                            data: descontoData,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Nº de Vendas',
+                            data: numVendasData,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            tension: 0.3,
+                            fill: true,
+                            yAxisID: 'y2',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    stacked: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Evolução de Vendas, Descontos e Quantidade (10 dias)',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Valores (R$)'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        y2: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Número de Vendas'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+
+        } catch (err) {
+            console.error('Erro ao carregar gráfico geral:', err);
+            mostrarMensagemGraficoVazio('graficoVendas10Dias', 'Erro ao carregar dados');
+        }
+    }
+
+    // ===================================================
+    // INICIALIZAÇÃO
+    // ===================================================
+    document.addEventListener('DOMContentLoaded', () => {
+        // Carregar dados iniciais (SEM updateDadosEstoque)
+        const carregamentosIniciais = [
+            updateVendasDia(),
+            updateAlertasvendedor(),
+            carregarTopVendedores(),
+            carregarGraficoVendedores(),
+            carregarGraficoGeral()
+        ];
+
+        // Tratar erros individuais sem parar a execução
+        Promise.allSettled(carregamentosIniciais).then(results => {
+            results.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.warn(`Falha ao carregar dados ${index}:`, result.reason);
+                }
+            });
         });
 
-      } catch (error) {
-        console.error('Erro ao carregar gráfico:', error);
-      }
-    }
+        // Atualizações periódicas (SEM estoque)
+        setInterval(updateVendasDia, 30000);    // 30 segundos
+        setInterval(updateAlertasvendedor, 60000); // 1 minuto
+        setInterval(carregarTopVendedores, 120000); // 2 minutos
+        setInterval(carregarGraficoVendedores, 300000); // 5 minutos
+        setInterval(carregarGraficoGeral, 300000); // 5 minutos
 
-    carregarGrafico();
-  </script>
+        // Animações para cards
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
 
+        document.querySelectorAll('.card-stat').forEach(card => observer.observe(card));
+    });
 
-
+    // Expor funções para possível uso externo
+    window.dashboardVendedores = {
+        updateVendasDia,
+        updateAlertasvendedor,
+        carregarTopVendedores,
+        carregarGraficoVendedores,
+        carregarGraficoGeral,
+        formatarNumero,
+        formatarBRL,
+        formatarPercentual
+    };
+</script>
 <?php
 } else {
     header('Location:signin');
