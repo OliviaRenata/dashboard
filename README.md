@@ -1,37 +1,78 @@
- Módulo: Dashboard de Gestão de Vendas
-O Dashboard é a central de inteligência do sistema, projetado para fornecer uma visão em tempo real da saúde financeira e operacional da empresa. Ele consolida dados de vendas, performance de equipe e alertas de inventário em uma interface responsiva e intuitiva.
+Dashboard de Vendedores – README
+Descrição
 
- Principais Funcionalidades
-Indicadores de Desempenho (KPIs): Monitoramento diário de Volume de Vendas, Faturamento Bruto, Custos Operacionais e Lucro Líquido.
+Este projeto é um Dashboard de Vendedores desenvolvido em PHP + MySQL, com foco em exibir métricas de vendas, evolução e comissões de cada vendedor da empresa. Ele permite acompanhar quantidade de vendas, valor total e comissões em tempo real, oferecendo insights sobre desempenho individual e coletivo da equipe de vendas.
 
-Ranking de Vendedores: Identificação automática do "Vendedor Estrela", destacando quem possui maior volume e lucratividade no período.
+O dashboard foi desenvolvido para integração interna de empresas, utilizando dados de tabelas de faturamento (movsaida0, movsaida4) e comissões (movcomissao2, movcomissao3, movcomissao4).
 
-Alertas de Inventário: Sistema de notificações críticas para produtos:
+Funcionalidades
 
-Sem estoque.
+Visualização dos top vendedores por:
 
-Sem preço de venda definido.
+Total de vendas
 
-Sem custo cadastrado.
+Total de comissão
 
-Sem código de barras (EAN).
+Quantidade de vendas realizadas
 
-Análise Visual (Gráficos): * Gráfico de evolução de vendas dos últimos 10 dias.
+Evolução das vendas nos últimos 10 dias
 
-Gráfico comparativo de performance entre vendedores.
+Indicadores de desempenho:
 
- Tecnologias Utilizadas
-Backend: PHP (Gestão de sessões e integração com MySQL).
+Meta diária, mensal e anual
 
-Frontend: HTML5, CSS3 (Custom Properties e Animações), Bootstrap.
+Comissão por forma de pagamento, seção e item
 
-Gráficos: Chart.js para visualização de dados dinâmica.
+Filtro por período e vendedor
 
-Interatividade: JavaScript Assíncrono (Fetch API) para atualização de dados sem recarregamento de página.
+Suporte a empresas múltiplas via idempresa
 
- Diferenciais do Design
-Totalmente Responsivo: Interface adaptável para desktops, tablets e smartphones.
+Dashboard responsivo e com endpoints JSON para consumo em front-end
 
-UX Dinâmico: Uso de animações Fade-in e estados de hover nos cards para melhor experiência do usuário.
+Estrutura de Tabelas e Colunas
 
-Segurança: Controle de permissões integrado e sanitização de chaves de acesso via SHA1.
+O dashboard utiliza os seguintes bancos/tabelas:
+
+1. movsaida0
+
+IDFATENT → ID da venda/faturamento
+
+IDEMPRESA → ID da empresa
+
+VLRTOTAL → Valor total da venda
+
+DTCAD → Data da venda
+
+CANCELADA → Filtra vendas canceladas
+
+2. movsaida4
+
+IDFATENT → ID da venda
+
+IDVENDEDOR → ID do vendedor
+
+3. movcomissao2 (Comissão por forma de pagamento)
+
+idvendedor → Vendedor
+
+idfatent → ID da venda
+
+vlr_dinheiro, vlr_pix, vlr_cartao_deb, vlr_cartao_cre, vlr_duplicata, vlr_cheque → Valores da comissão
+
+status → 1 = Ativo
+
+dtcad → Data do lançamento
+
+4. movcomissao3 (Comissão por seção)
+
+idvendedor, idfatent, vlr_comissao, status (1 = pago, 2 = pendente), dtcad
+
+5. movcomissao4 (Comissão por item)
+
+idvendedor, idfatent, vlr_comissao, status (1 = pago, 2 = pendente), dtcad
+
+6. cadpessoa0 (Cadastro de vendedores)
+
+IDPESSOA → ID do vendedor
+
+NOME → Nome do vendedor
